@@ -1,5 +1,5 @@
 <?php
-// Riwayat keterlambatan dengan filter nama, NIS, kelas, dan tanggal
+// Riwayat keterlambatan: filter, ubah, dan hapus catatan
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/config/koneksi.php';
 require_once __DIR__ . '/includes/fungsi.php';
@@ -8,6 +8,108 @@ $cari = trim($_GET['cari'] ?? '');
 $filter_kelas = (int)($_GET['id_kelas'] ?? 0);
 $tanggal_mulai = $_GET['tanggal_mulai'] ?? '';
 $tanggal_akhir = $_GET['tanggal_akhir'] ?? '';
+
+// Susun kueri string filter aktif agar bisa dibawa saat pindah halaman / redirect
+function filter_riwayat(array $filter): string
+{
+    $bersih = array_filter([
+        'cari' => $filter['cari'] ?? '',
+        'id_kelas' => (int)($filter['id_kelas'] ?? 0),
+        'tanggal_mulai' => $filter['tanggal_mulai'] ?? '',
+        'tanggal_akhir' => $filter['tanggal_akhir'] ?? '',
+    ], fn($v) => $v !== '' && $v !== 0);
+    return http_build_query($bersih);
+}
+
+$param_filter = [
+    'cari' => $cari,
+    'id_kelas' => $filter_kelas,
+    'tanggal_mulai' => $tanggal_mulai,
+    'tanggal_akhir' => $tanggal_akhir,
+];
+$kembali = 'riwayat.php' . (filter_riwayat($param_filter) !== '' ? '?' . filter_riwayat($param_filter) : '');
+
+// Hapus catatan (GET, dengan konfirmasi di tombol)
+if (($_GET['aksi'] ?? '') === 'hapus') {
+    $id = (int)($_GET['id'] ?? 0);
+    if ($id > 0) {
+        try {
+            $stmt = $pdo->prepare('DELETE FROM absensi_terlambat WHERE id = ?');
+            $stmt->execute([$id]);
+            pesan_flash('success', 'Catatan keterlambatan berhasil dihapus.');
+        } catch (PDOException $e) {
+            pesan_flash('danger', 'Catatan gagal dihapus.');
+        }
+    }
+    redirect($kembali);
+}
+
+// Simpan hasil edit (POST-Redirect-GET)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'ubah') {
+    $id = (int)($_POST['id'] ?? 0);
+    $id_siswa = (int)($_POST['id_siswa'] ?? 0);
+    $waktu = $_POST['waktu_terlambat'] ?? '';
+    $alasan = mb_substr(trim($_POST['alasan'] ?? ''), 0, 255);
+    $keterangan = mb_substr(trim($_POST['keterangan'] ?? ''), 0, 2000);
+
+    $ts = strtotime($waktu);
+    if ($id <= 0 || $id_siswa <= 0) {
+        pesan_flash('danger', 'Data tidak valid, silakan pilih ulang.');
+    } elseif (!$ts) {
+        pesan_flash('danger', 'Tanggal dan waktu keterlambatan tidak valid.');
+    } else {
+        $waktu_sql = date('Y-m-d H:i:s', $ts);
+
+        // Cegah duplikat: siswa sama + waktu sama, kecuali record ini sendiri
+        $cek = $pdo->prepare('SELECT a.id, s.nama FROM absensi_terlambat a
+                              JOIN siswa s ON s.id = a.id_siswa
+                              WHERE a.id_siswa = ? AND a.waktu_terlambat = ? AND a.id <> ? LIMIT 1');
+        $cek->execute([$id_siswa, $waktu_sql, $id]);
+        $dup = $cek->fetch();
+
+        if ($dup) {
+            pesan_flash('warning', 'Siswa "' . $dup['nama'] . '" sudah punya catatan lain pada '
+                . format_waktu($waktu_sql) . '. Pilih waktu berbeda.');
+        } else {
+            $stmt = $pdo->prepare('UPDATE absensi_terlambat
+                                   SET id_siswa = ?, waktu_terlambat = ?, alasan = ?, keterangan = ?
+                                   WHERE id = ?');
+            $stmt->execute([
+                $id_siswa,
+                $waktu_sql,
+                $alasan !== '' ? $alasan : null,
+                $keterangan !== '' ? $keterangan : null,
+                $id,
+            ]);
+            pesan_flash('success', 'Catatan keterlambatan berhasil diperbarui.');
+        }
+    }
+    redirect($kembali);
+}
+
+// Mode edit: ambil record + daftar siswa untuk select
+$record_ubah = null;
+if (($_GET['aksi'] ?? '') === 'ubah') {
+    $id = (int)($_GET['id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT a.*, s.nama AS nama_siswa, s.nis
+                           FROM absensi_terlambat a
+                           JOIN siswa s ON s.id = a.id_siswa
+                           WHERE a.id = ?');
+    $stmt->execute([$id]);
+    $record_ubah = $stmt->fetch() ?: null;
+    if (!$record_ubah) {
+        pesan_flash('danger', 'Catatan tidak ditemukan.');
+        redirect($kembali);
+    }
+}
+
+$daftar_siswa_edit = [];
+if ($record_ubah) {
+    $daftar_siswa_edit = $pdo->query('SELECT s.id, s.nama, s.nis, k.tingkat, k.jurusan, k.bagian
+                                      FROM siswa s
+                                      JOIN kelas k ON k.id = s.id_kelas
+                                      ORDER BY FIELD(k.tingkat,"X","XI","XII"), k.jurusan, k.bagian, s.nama')->fetchAll();
+}
 
 $sql = 'SELECT a.*, s.nama AS nama_siswa, s.nis, k.tingkat, k.jurusan, k.bagian, p.nama AS nama_admin
         FROM absensi_terlambat a
@@ -49,6 +151,60 @@ $menu_aktif = 'riwayat';
 require __DIR__ . '/includes/kepala.php';
 ?>
 
+<?php if ($record_ubah): ?>
+<!-- Form edit catatan -->
+<div class="panel mb-4">
+    <div class="panel-judul">
+        <i class="bi bi-pencil-square"></i> Ubah Catatan
+        <span class="redup" style="font-weight:400">&mdash; <?= e($record_ubah['nama_siswa']) ?> (<?= e($record_ubah['nis']) ?>)</span>
+    </div>
+    <div class="panel-isi">
+        <form method="post">
+            <input type="hidden" name="aksi" value="ubah">
+            <input type="hidden" name="id" value="<?= (int)$record_ubah['id'] ?>">
+            <input type="hidden" name="cari" value="<?= e($cari) ?>">
+            <input type="hidden" name="id_kelas" value="<?= $filter_kelas ?>">
+            <input type="hidden" name="tanggal_mulai" value="<?= e($tanggal_mulai) ?>">
+            <input type="hidden" name="tanggal_akhir" value="<?= e($tanggal_akhir) ?>">
+
+            <div class="baris">
+                <div class="k-33">
+                    <label class="label" for="edit_siswa">Siswa <span class="wajib">*</span></label>
+                    <select name="id_siswa" id="edit_siswa" class="pilih" required>
+                        <?php foreach ($daftar_siswa_edit as $s): ?>
+                            <option value="<?= (int)$s['id'] ?>" <?= (int)$record_ubah['id_siswa'] === (int)$s['id'] ? 'selected' : '' ?>>
+                                <?= e(nama_kelas($s['tingkat'], $s['jurusan'], $s['bagian'])) ?> - <?= e($s['nama']) ?> (<?= e($s['nis']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="k-33">
+                    <label class="label" for="edit_waktu">Waktu Terlambat <span class="wajib">*</span></label>
+                    <input type="datetime-local" name="waktu_terlambat" id="edit_waktu" class="kontrol" required
+                           value="<?= e(date('Y-m-d\TH:i', strtotime($record_ubah['waktu_terlambat']))) ?>">
+                </div>
+                <div class="k-33">
+                    <label class="label" for="edit_alasan">Alasan</label>
+                    <input type="text" name="alasan" id="edit_alasan" class="kontrol" maxlength="255"
+                           placeholder="Contoh: macet" value="<?= e($record_ubah['alasan']) ?>">
+                </div>
+                <div class="k-100">
+                    <label class="label" for="edit_keterangan">Keterangan</label>
+                    <textarea name="keterangan" id="edit_keterangan" class="area" maxlength="2000"
+                              placeholder="Catatan tambahan (opsional)"><?= e($record_ubah['keterangan']) ?></textarea>
+                </div>
+                <div class="k-100">
+                    <button type="submit" class="btn btn-inti" onclick="return confirm('Simpan perubahan catatan ini?')">
+                        <i class="bi bi-save"></i> Simpan Perubahan
+                    </button>
+                    <a href="<?= e($kembali) ?>" class="btn btn-garis">Batal</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Filter -->
 <div class="panel mb-4">
     <div class="panel-judul"><i class="bi bi-funnel"></i> Saring Data</div>
@@ -56,7 +212,7 @@ require __DIR__ . '/includes/kepala.php';
         <form method="get" class="baris" style="align-items:flex-end">
             <div class="k-30">
                 <label class="label" for="cari">Nama / NIS</label>
-                <input type="text" name="cari" id="cari" class="kontrol" placeholder="Cari nama atau NIS..." value="<?= e($cari) ?>">
+                <input type="text" name="cari" id="cari" class="kontrol" maxlength="100" placeholder="Cari nama atau NIS..." value="<?= e($cari) ?>">
             </div>
             <div class="k-25">
                 <label class="label" for="id_kelas">Kelas</label>
@@ -112,6 +268,7 @@ require __DIR__ . '/includes/kepala.php';
                         <th>Alasan</th>
                         <th>Keterangan</th>
                         <th>Pencatat</th>
+                        <th class="aksi">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,6 +284,17 @@ require __DIR__ . '/includes/kepala.php';
                             <td class="redup"><?= e($r['alasan'] ?: '-') ?></td>
                             <td class="redup"><?= e($r['keterangan'] ?: '-') ?></td>
                             <td class="redup"><?= e($r['nama_admin']) ?></td>
+                            <td class="aksi">
+                                <a href="?<?= e(filter_riwayat($param_filter) !== '' ? filter_riwayat($param_filter) . '&' : '') ?>aksi=ubah&id=<?= (int)$r['id'] ?>"
+                                   class="btn btn-waspada btn-sm btn-ikon" title="Ubah">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="?<?= e(filter_riwayat($param_filter) !== '' ? filter_riwayat($param_filter) . '&' : '') ?>aksi=hapus&id=<?= (int)$r['id'] ?>"
+                                   class="btn btn-bahaya btn-sm btn-ikon" title="Hapus"
+                                   onclick="return confirm('Hapus catatan keterlambatan <?= e($r['nama_siswa']) ?> pada <?= e(format_waktu($r['waktu_terlambat'])) ?>?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

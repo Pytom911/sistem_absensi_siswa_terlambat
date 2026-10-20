@@ -14,13 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
 
     if (!in_array($tingkat, ['X', 'XI', 'XII'], true) || $jurusan === '' || !in_array($bagian, ['01', '02'], true)) {
         pesan_flash('danger', 'Tingkat, jurusan, dan bagian wajib diisi dengan benar.');
+    } elseif ($sudah = kelas_terpakai($pdo, $tingkat, $jurusan, $bagian)) {
+        pesan_flash('warning', 'Kelas "' . nama_kelas($sudah['tingkat'], $sudah['jurusan'], $sudah['bagian'])
+            . '" sudah ada. Tidak perlu menambah lagi.');
     } else {
         try {
             $stmt = $pdo->prepare('INSERT INTO kelas (tingkat, jurusan, bagian) VALUES (?, ?, ?)');
             $stmt->execute([$tingkat, $jurusan, $bagian]);
             pesan_flash('success', 'Kelas berhasil ditambahkan.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal menyimpan. Kombinasi tingkat, jurusan, dan bagian mungkin sudah ada.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'Kelas "' . nama_kelas($tingkat, $jurusan, $bagian) . '" sudah ada.');
+            } else {
+                pesan_flash('danger', 'Gagal menyimpan. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('kelas.php');
@@ -35,13 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
 
     if ($id <= 0 || !in_array($tingkat, ['X', 'XI', 'XII'], true) || $jurusan === '' || !in_array($bagian, ['01', '02'], true)) {
         pesan_flash('danger', 'Data tidak valid.');
+    } elseif ($sudah = kelas_terpakai($pdo, $tingkat, $jurusan, $bagian, $id)) {
+        pesan_flash('warning', 'Kelas "' . nama_kelas($sudah['tingkat'], $sudah['jurusan'], $sudah['bagian'])
+            . '" sudah dipakai kelas lain. Ubah salah satu bagiannya.');
     } else {
         try {
             $stmt = $pdo->prepare('UPDATE kelas SET tingkat = ?, jurusan = ?, bagian = ? WHERE id = ?');
             $stmt->execute([$tingkat, $jurusan, $bagian, $id]);
             pesan_flash('success', 'Kelas berhasil diperbarui.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal memperbarui. Kombinasi tersebut mungkin sudah dipakai kelas lain.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'Kelas "' . nama_kelas($tingkat, $jurusan, $bagian) . '" sudah dipakai kelas lain.');
+            } else {
+                pesan_flash('danger', 'Gagal memperbarui. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('kelas.php');

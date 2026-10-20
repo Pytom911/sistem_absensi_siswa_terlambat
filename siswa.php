@@ -14,13 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
 
     if ($nis === '' || $nama === '' || $id_kelas <= 0) {
         pesan_flash('danger', 'NIS, nama, dan kelas wajib diisi.');
+    } elseif ($sudah = nilai_terpakai($pdo, 'siswa', 'nis', $nis)) {
+        pesan_flash('warning', 'NIS "' . $sudah['nis'] . '" sudah terdaftar atas nama "'
+            . $sudah['nama'] . '". Gunakan NIS lain.');
     } else {
         try {
             $stmt = $pdo->prepare('INSERT INTO siswa (nis, nama, id_kelas) VALUES (?, ?, ?)');
             $stmt->execute([$nis, $nama, $id_kelas]);
             pesan_flash('success', 'Data siswa berhasil ditambahkan.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal menyimpan. Periksa kembali, NIS mungkin sudah terpakai.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'NIS "' . $nis . '" sudah terpakai siswa lain. Gunakan NIS lain.');
+            } else {
+                pesan_flash('danger', 'Gagal menyimpan. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('siswa.php');
@@ -35,13 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
 
     if ($id <= 0 || $nis === '' || $nama === '' || $id_kelas <= 0) {
         pesan_flash('danger', 'Data tidak lengkap.');
+    } elseif ($sudah = nilai_terpakai($pdo, 'siswa', 'nis', $nis, $id)) {
+        pesan_flash('warning', 'NIS "' . $sudah['nis'] . '" sudah dipakai siswa lain ("'
+            . $sudah['nama'] . '"). Gunakan NIS berbeda.');
     } else {
         try {
             $stmt = $pdo->prepare('UPDATE siswa SET nis = ?, nama = ?, id_kelas = ? WHERE id = ?');
             $stmt->execute([$nis, $nama, $id_kelas, $id]);
             pesan_flash('success', 'Data siswa berhasil diperbarui.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal memperbarui. NIS mungkin sudah dipakai siswa lain.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'NIS "' . $nis . '" sudah dipakai siswa lain. Gunakan NIS berbeda.');
+            } else {
+                pesan_flash('danger', 'Gagal memperbarui. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('siswa.php');

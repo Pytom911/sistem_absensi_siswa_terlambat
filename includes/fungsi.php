@@ -71,3 +71,42 @@ function nama_kelas($tingkat, $jurusan, $bagian)
 {
     return trim($tingkat . ' ' . $jurusan . ' ' . $bagian);
 }
+
+// Apakah exception karena pelanggaran unique key (duplikat)?
+function duplikat(PDOException $e)
+{
+    return ($e->errorInfo[0] ?? '') === '23000' && (int)($e->errorInfo[1] ?? 0) === 1062;
+}
+
+// Cari data lain yang sudah memakai nilai unik tertentu.
+// $kecuali = id yang dikecualikan (saat mode ubah), null saat tambah.
+// Mengembalikan baris pertama yang bentrok, atau null bila bebas.
+function nilai_terpakai(PDO $pdo, $tabel, $kolom, $nilai, ?int $kecuali = null)
+{
+    $sql = "SELECT * FROM {$tabel} WHERE {$kolom} = ? LIMIT 1";
+    $params = [$nilai];
+    if ($kecuali !== null) {
+        $sql = "SELECT * FROM {$tabel} WHERE {$kolom} = ? AND id <> ? LIMIT 1";
+        $params[] = $kecuali;
+    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $baris = $stmt->fetch();
+    return $baris ?: null;
+}
+
+// Cari kelas lain dengan kombinasi tingkat+jurusan+bagian sama (unique key gabungan).
+// $kecuali = id kelas yang dikecualikan saat mode ubah.
+function kelas_terpakai(PDO $pdo, $tingkat, $jurusan, $bagian, ?int $kecuali = null)
+{
+    $sql = 'SELECT * FROM kelas WHERE tingkat = ? AND jurusan = ? AND bagian = ?';
+    $params = [$tingkat, $jurusan, $bagian];
+    if ($kecuali !== null) {
+        $sql .= ' AND id <> ?';
+        $params[] = $kecuali;
+    }
+    $stmt = $pdo->prepare($sql . ' LIMIT 1');
+    $stmt->execute($params);
+    $baris = $stmt->fetch();
+    return $baris ?: null;
+}

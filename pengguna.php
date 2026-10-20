@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
         pesan_flash('danger', 'Semua kolom wajib diisi.');
     } elseif (strlen($kata_sandi) < 6) {
         pesan_flash('danger', 'Kata sandi minimal 6 karakter.');
+    } elseif ($sudah = nilai_terpakai($pdo, 'pengguna', 'nama_pengguna', $nama_pengguna)) {
+        pesan_flash('warning', 'Nama pengguna "' . $sudah['nama_pengguna'] . '" sudah dipakai akun "'
+            . $sudah['nama'] . '". Gunakan nama lain.');
     } else {
         try {
             $stmt = $pdo->prepare('INSERT INTO pengguna (nama, nama_pengguna, kata_sandi, peran)
@@ -23,7 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
             $stmt->execute([$nama, $nama_pengguna, $kata_sandi]);
             pesan_flash('success', 'Akun admin berhasil ditambahkan.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal menyimpan. Nama pengguna mungkin sudah terpakai.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'Nama pengguna "' . $nama_pengguna . '" sudah dipakai. Gunakan nama lain.');
+            } else {
+                pesan_flash('danger', 'Gagal menyimpan. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('pengguna.php');
@@ -40,6 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
         pesan_flash('danger', 'Nama dan nama pengguna wajib diisi.');
     } elseif ($kata_sandi !== '' && strlen($kata_sandi) < 6) {
         pesan_flash('danger', 'Kata sandi minimal 6 karakter.');
+    } elseif ($sudah = nilai_terpakai($pdo, 'pengguna', 'nama_pengguna', $nama_pengguna, $id)) {
+        pesan_flash('warning', 'Nama pengguna "' . $sudah['nama_pengguna'] . '" sudah dipakai akun lain ("'
+            . $sudah['nama'] . '"). Gunakan nama berbeda.');
     } else {
         try {
             if ($kata_sandi !== '') {
@@ -51,7 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
             }
             pesan_flash('success', 'Akun admin berhasil diperbarui.');
         } catch (PDOException $e) {
-            pesan_flash('danger', 'Gagal memperbarui. Nama pengguna mungkin sudah dipakai akun lain.');
+            if (duplikat($e)) {
+                pesan_flash('warning', 'Nama pengguna "' . $nama_pengguna . '" sudah dipakai akun lain.');
+            } else {
+                pesan_flash('danger', 'Gagal memperbarui. Periksa kembali isian Anda.');
+            }
         }
     }
     redirect('pengguna.php');
@@ -121,7 +135,7 @@ require __DIR__ . '/includes/kepala.php';
                     <?php if ($pengguna_ubah): ?><span class="redup" style="font-weight:400">(kosongkan bila tetap)</span>
                     <?php else: ?><span class="wajib">*</span><?php endif; ?>
                 </label>
-                <input type="password" name="kata_sandi" id="kata_sandi" class="kontrol" minlength="6"
+                <input type="password" name="kata_sandi" id="kata_sandi" class="kontrol" minlength="6" maxlength="255"
                        placeholder="minimal 6 karakter" <?= $pengguna_ubah ? '' : 'required' ?>>
             </div>
             <div style="flex:0 0 auto">

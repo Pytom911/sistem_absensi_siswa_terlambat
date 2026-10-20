@@ -8,8 +8,8 @@ require_once __DIR__ . '/includes/fungsi.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'simpan') {
     $id_siswa = (int)($_POST['id_siswa'] ?? 0);
     $waktu = $_POST['waktu_terlambat'] ?? '';
-    $alasan = trim($_POST['alasan'] ?? '');
-    $keterangan = trim($_POST['keterangan'] ?? '');
+    $alasan = mb_substr(trim($_POST['alasan'] ?? ''), 0, 255);
+    $keterangan = mb_substr(trim($_POST['keterangan'] ?? ''), 0, 2000);
 
     $ts = strtotime($waktu);
     if ($id_siswa <= 0) {
@@ -17,16 +17,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'simpan'
     } elseif (!$ts) {
         pesan_flash('danger', 'Tanggal dan waktu keterlambatan tidak valid.');
     } else {
-        $stmt = $pdo->prepare('INSERT INTO absensi_terlambat (id_siswa, id_pengguna, waktu_terlambat, alasan, keterangan)
-                               VALUES (?, ?, ?, ?, ?)');
-        $stmt->execute([
-            $id_siswa,
-            $_SESSION['id_pengguna'],
-            date('Y-m-d H:i:s', $ts),
-            $alasan !== '' ? $alasan : null,
-            $keterangan !== '' ? $keterangan : null,
-        ]);
-        pesan_flash('success', 'Keterlambatan berhasil dicatat.');
+        // Cegah duplikat: siswa sama + waktu sama
+        $cek = $pdo->prepare('SELECT a.id, s.nama FROM absensi_terlambat a
+                              JOIN siswa s ON s.id = a.id_siswa
+                              WHERE a.id_siswa = ? AND a.waktu_terlambat = ? LIMIT 1');
+        $cek->execute([$id_siswa, date('Y-m-d H:i:s', $ts)]);
+        $dup = $cek->fetch();
+
+        if ($dup) {
+            pesan_flash('warning', 'Siswa "' . $dup['nama'] . '" sudah punya catatan pada '
+                . format_waktu(date('Y-m-d H:i:s', $ts))
+                . '. Periksa riwayat sebelum mencatat ulang.');
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO absensi_terlambat (id_siswa, id_pengguna, waktu_terlambat, alasan, keterangan)
+                                   VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([
+                $id_siswa,
+                $_SESSION['id_pengguna'],
+                date('Y-m-d H:i:s', $ts),
+                $alasan !== '' ? $alasan : null,
+                $keterangan !== '' ? $keterangan : null,
+            ]);
+            pesan_flash('success', 'Keterlambatan berhasil dicatat.');
+        }
     }
 
     $kembali = 'catat.php?' . http_build_query(array_filter([
@@ -165,7 +178,7 @@ require __DIR__ . '/includes/kepala.php';
             <input type="hidden" name="bagian" value="<?= e($bagian) ?>">
             <div class="k-40">
                 <label class="label" for="cari">Cari siswa</label>
-                <input type="text" name="cari" id="cari" class="kontrol" placeholder="Nama atau NIS..." value="<?= e($cari) ?>">
+                <input type="text" name="cari" id="cari" class="kontrol" maxlength="100" placeholder="Nama atau NIS..." value="<?= e($cari) ?>">
             </div>
             <div class="k-25" style="flex:0 0 auto">
                 <button type="submit" class="btn btn-inti"><i class="bi bi-search"></i> Cari</button>
@@ -244,7 +257,7 @@ require __DIR__ . '/includes/kepala.php';
                 </div>
                 <div class="k-100">
                     <label class="label" for="keterangan">Keterangan</label>
-                    <textarea name="keterangan" id="keterangan" class="area"
+                    <textarea name="keterangan" id="keterangan" class="area" maxlength="2000"
                               placeholder="Catatan tambahan (opsional)"></textarea>
                 </div>
                 <div class="k-100">

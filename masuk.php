@@ -83,12 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="post" autocomplete="off">
                 <div class="mb-3">
                     <label for="nama_pengguna" class="label">Nama Pengguna</label>
-                    <input type="text" name="nama_pengguna" id="nama_pengguna" class="kontrol"
+                    <input type="text" name="nama_pengguna" id="nama_pengguna" class="kontrol" maxlength="50"
                            placeholder="nama pengguna" value="<?= e($_POST['nama_pengguna'] ?? '') ?>" required autofocus>
                 </div>
                 <div class="mb-4">
                     <label for="kata_sandi" class="label">Kata Sandi</label>
-                    <input type="password" name="kata_sandi" id="kata_sandi" class="kontrol"
+                    <input type="password" name="kata_sandi" id="kata_sandi" class="kontrol" maxlength="255"
                            placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn btn-inti btn-blok">

@@ -78,34 +78,33 @@ if ($aksi === 'ubah' && $_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 $judul_halaman = 'Data Kelas';
+$sub_halaman = 'Kelola tingkat, jurusan, dan bagian kelas';
 $menu_aktif = 'kelas';
 require __DIR__ . '/includes/kepala.php';
 ?>
 
 <!-- Form tambah / ubah -->
-<div class="card mb-4">
-    <div class="card-header fw-semibold">
-        <i class="bi bi-building-add me-2"></i><?= $kelas_ubah ? 'Ubah Kelas' : 'Tambah Kelas' ?>
+<div class="panel mb-4">
+    <div class="panel-judul">
+        <i class="bi bi-building-add"></i> <?= $kelas_ubah ? 'Ubah Kelas' : 'Tambah Kelas' ?>
     </div>
-    <div class="card-body">
-        <form method="post" class="row g-2 align-items-end">
+    <div class="panel-isi">
+        <form method="post" class="baris" style="align-items:flex-end">
             <input type="hidden" name="aksi" value="<?= $kelas_ubah ? 'ubah' : 'tambah' ?>">
             <?php if ($kelas_ubah): ?>
                 <input type="hidden" name="id" value="<?= (int)$kelas_ubah['id'] ?>">
             <?php endif; ?>
-            <div class="col-md-3">
-                <label class="form-label">Tingkat <span class="text-danger">*</span></label>
-                <select name="tingkat" class="form-select" required>
+            <div class="k-25">
+                <label class="label" for="tingkat">Tingkat <span class="wajib">*</span></label>
+                <select name="tingkat" id="tingkat" class="pilih" required>
                     <?php foreach (['X', 'XI', 'XII'] as $t): ?>
-                        <option value="<?= $t ?>" <?= ($kelas_ubah['tingkat'] ?? '') === $t ? 'selected' : '' ?>>
-                            <?= $t ?>
-                        </option>
+                        <option value="<?= $t ?>" <?= ($kelas_ubah['tingkat'] ?? '') === $t ? 'selected' : '' ?>><?= $t ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Jurusan <span class="text-danger">*</span></label>
-                <input type="text" name="jurusan" class="form-control" maxlength="30" required
+            <div class="k-40">
+                <label class="label" for="jurusan">Jurusan <span class="wajib">*</span></label>
+                <input type="text" name="jurusan" id="jurusan" class="kontrol" maxlength="30" required
                        list="daftar_jurusan" placeholder="Contoh: RPL, DKV, TKJ..."
                        value="<?= e($kelas_ubah['jurusan'] ?? '') ?>">
                 <datalist id="daftar_jurusan">
@@ -117,24 +116,22 @@ require __DIR__ . '/includes/kepala.php';
                     <option value="Pemasaran"></option>
                 </datalist>
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Bagian <span class="text-danger">*</span></label>
-                <select name="bagian" class="form-select" required>
+            <div class="k-25">
+                <label class="label" for="bagian">Bagian <span class="wajib">*</span></label>
+                <select name="bagian" id="bagian" class="pilih" required>
                     <?php foreach (['01', '02'] as $b): ?>
-                        <option value="<?= $b ?>" <?= ($kelas_ubah['bagian'] ?? '') === $b ? 'selected' : '' ?>>
-                            <?= $b ?>
-                        </option>
+                        <option value="<?= $b ?>" <?= ($kelas_ubah['bagian'] ?? '') === $b ? 'selected' : '' ?>><?= $b ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-save me-1"></i><?= $kelas_ubah ? 'Simpan' : 'Tambah' ?>
+            <div style="flex:0 0 auto">
+                <button type="submit" class="btn btn-inti">
+                    <i class="bi bi-save"></i> <?= $kelas_ubah ? 'Simpan' : 'Tambah' ?>
                 </button>
             </div>
             <?php if ($kelas_ubah): ?>
-                <div class="col-12">
-                    <a href="kelas.php" class="btn btn-outline-secondary btn-sm">Batal ubah</a>
+                <div style="flex:0 0 auto">
+                    <a href="kelas.php" class="btn btn-garis">Batal ubah</a>
                 </div>
             <?php endif; ?>
         </form>
@@ -142,50 +139,54 @@ require __DIR__ . '/includes/kepala.php';
 </div>
 
 <!-- Tabel kelas -->
-<div class="card">
-    <div class="card-header fw-semibold">
-        <i class="bi bi-table me-2"></i>Daftar Kelas (<?= count($daftar_kelas) ?>)
+<div class="panel">
+    <div class="panel-judul">
+        <i class="bi bi-table"></i> Daftar Kelas
+        <span class="badge badge-garis"><?= count($daftar_kelas) ?> kelas</span>
     </div>
-    <div class="card-body">
-        <?php if (count($daftar_kelas) === 0): ?>
-            <p class="text-muted mb-0">Belum ada data kelas.</p>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead>
+
+    <?php if (count($daftar_kelas) === 0): ?>
+        <div class="kosong">
+            <i class="bi bi-building"></i>
+            <div class="kosong-judul">Belum ada data kelas</div>
+            <p>Tambahkan kelas lewat formulir di atas.</p>
+        </div>
+    <?php else: ?>
+        <div class="tabel-bungkus">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th style="width:56px">No</th>
+                        <th>Tingkat</th>
+                        <th>Jurusan</th>
+                        <th>Bagian</th>
+                        <th>Jumlah Siswa</th>
+                        <th class="aksi">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($daftar_kelas as $i => $k): ?>
                         <tr>
-                            <th>No</th>
-                            <th>Tingkat</th>
-                            <th>Jurusan</th>
-                            <th>Bagian</th>
-                            <th>Jumlah Siswa</th>
-                            <th class="text-end">Aksi</th>
+                            <td class="angka faint"><?= $i + 1 ?></td>
+                            <td><span class="badge badge-petrol"><?= e($k['tingkat']) ?></span></td>
+                            <td style="font-weight:600"><?= e($k['jurusan']) ?></td>
+                            <td class="angka"><?= e($k['bagian']) ?></td>
+                            <td class="angka"><?= (int)$k['jumlah_siswa'] ?> siswa</td>
+                            <td class="aksi">
+                                <a href="?aksi=ubah&id=<?= (int)$k['id'] ?>" class="btn btn-waspada btn-sm btn-ikon" title="Ubah">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="?aksi=hapus&id=<?= (int)$k['id'] ?>" class="btn btn-bahaya btn-sm btn-ikon" title="Hapus"
+                                   onclick="return confirm('Hapus kelas <?= e(nama_kelas($k['tingkat'], $k['jurusan'], $k['bagian'])) ?>?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($daftar_kelas as $i => $k): ?>
-                            <tr>
-                                <td><?= $i + 1 ?></td>
-                                <td><?= e($k['tingkat']) ?></td>
-                                <td><?= e($k['jurusan']) ?></td>
-                                <td><?= e($k['bagian']) ?></td>
-                                <td><?= (int)$k['jumlah_siswa'] ?></td>
-                                <td class="text-end">
-                                    <a href="?aksi=ubah&id=<?= (int)$k['id'] ?>" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="?aksi=hapus&id=<?= (int)$k['id'] ?>" class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Hapus kelas <?= e(nama_kelas($k['tingkat'], $k['jurusan'], $k['bagian'])) ?>?')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php require __DIR__ . '/includes/kaki.php'; ?>

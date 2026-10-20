@@ -44,23 +44,23 @@ $daftar_kelas = $pdo->query('SELECT * FROM kelas
                              ORDER BY FIELD(tingkat,"X","XI","XII"), jurusan, bagian')->fetchAll();
 
 $judul_halaman = 'Riwayat Keterlambatan';
+$sub_halaman = 'Telusuri catatan keterlambatan dengan saringan';
 $menu_aktif = 'riwayat';
 require __DIR__ . '/includes/kepala.php';
 ?>
 
 <!-- Filter -->
-<div class="card mb-4">
-    <div class="card-header fw-semibold"><i class="bi bi-funnel me-2"></i>Filter</div>
-    <div class="card-body">
-        <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label">Nama / NIS</label>
-                <input type="text" name="cari" class="form-control" placeholder="Cari nama atau NIS..."
-                       value="<?= e($cari) ?>">
+<div class="panel mb-4">
+    <div class="panel-judul"><i class="bi bi-funnel"></i> Saring Data</div>
+    <div class="panel-isi">
+        <form method="get" class="baris" style="align-items:flex-end">
+            <div class="k-30">
+                <label class="label" for="cari">Nama / NIS</label>
+                <input type="text" name="cari" id="cari" class="kontrol" placeholder="Cari nama atau NIS..." value="<?= e($cari) ?>">
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Kelas</label>
-                <select name="id_kelas" class="form-select">
+            <div class="k-25">
+                <label class="label" for="id_kelas">Kelas</label>
+                <select name="id_kelas" id="id_kelas" class="pilih">
                     <option value="0">Semua kelas</option>
                     <?php foreach ($daftar_kelas as $k): ?>
                         <option value="<?= (int)$k['id'] ?>" <?= $filter_kelas === (int)$k['id'] ? 'selected' : '' ?>>
@@ -69,66 +69,70 @@ require __DIR__ . '/includes/kepala.php';
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Dari Tanggal</label>
-                <input type="date" name="tanggal_mulai" class="form-control" value="<?= e($tanggal_mulai) ?>">
+            <div class="k-25">
+                <label class="label" for="tanggal_mulai">Dari Tanggal</label>
+                <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="kontrol" value="<?= e($tanggal_mulai) ?>">
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Sampai Tanggal</label>
-                <input type="date" name="tanggal_akhir" class="form-control" value="<?= e($tanggal_akhir) ?>">
+            <div class="k-25">
+                <label class="label" for="tanggal_akhir">Sampai Tanggal</label>
+                <input type="date" name="tanggal_akhir" id="tanggal_akhir" class="kontrol" value="<?= e($tanggal_akhir) ?>">
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Terapkan</button>
+            <div style="flex:0 0 auto">
+                <button type="submit" class="btn btn-inti"><i class="bi bi-search"></i> Terapkan</button>
             </div>
-            <div class="col-auto">
-                <a href="riwayat.php" class="btn btn-outline-secondary">Reset</a>
+            <div style="flex:0 0 auto">
+                <a href="riwayat.php" class="btn btn-garis">Reset</a>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Tabel riwayat -->
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span class="fw-semibold"><i class="bi bi-clock-history me-2"></i>Daftar Keterlambatan</span>
-        <span class="badge text-bg-secondary"><?= count($riwayat) ?> catatan</span>
+<div class="panel">
+    <div class="panel-judul">
+        <i class="bi bi-clock-history"></i> Daftar Keterlambatan
+        <span class="badge badge-terlambat" style="margin-left:auto"><?= count($riwayat) ?> catatan</span>
     </div>
-    <div class="card-body">
-        <?php if (count($riwayat) === 0): ?>
-            <p class="text-muted mb-0">Tidak ada catatan keterlambatan yang cocok dengan filter.</p>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead>
+
+    <?php if (count($riwayat) === 0): ?>
+        <div class="kosong">
+            <i class="bi bi-journal-x"></i>
+            <div class="kosong-judul">Tidak ada catatan yang cocok</div>
+            <p>Ubah kata kunci atau rentang tanggal untuk melihat hasil lain.</p>
+        </div>
+    <?php else: ?>
+        <div class="tabel-bungkus">
+            <table class="tabel">
+                <thead>
+                    <tr>
+                        <th style="width:56px">No</th>
+                        <th>Siswa</th>
+                        <th>Kelas</th>
+                        <th>Waktu</th>
+                        <th>Alasan</th>
+                        <th>Keterangan</th>
+                        <th>Pencatat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($riwayat as $i => $r): ?>
                         <tr>
-                            <th>No</th>
-                            <th>NIS</th>
-                            <th>Nama Siswa</th>
-                            <th>Kelas</th>
-                            <th>Waktu Terlambat</th>
-                            <th>Alasan</th>
-                            <th>Keterangan</th>
-                            <th>Admin Pencatat</th>
+                            <td class="angka faint"><?= $i + 1 ?></td>
+                            <td>
+                                <div style="font-weight:600"><?= e($r['nama_siswa']) ?></div>
+                                <div class="kecil faint angka"><?= e($r['nis']) ?></div>
+                            </td>
+                            <td><span class="badge badge-petrol"><?= e(nama_kelas($r['tingkat'], $r['jurusan'], $r['bagian'])) ?></span></td>
+                            <td><span class="waktu-terlambat"><?= e(format_waktu($r['waktu_terlambat'])) ?></span></td>
+                            <td class="redup"><?= e($r['alasan'] ?: '-') ?></td>
+                            <td class="redup"><?= e($r['keterangan'] ?: '-') ?></td>
+                            <td class="redup"><?= e($r['nama_admin']) ?></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($riwayat as $i => $r): ?>
-                            <tr>
-                                <td><?= $i + 1 ?></td>
-                                <td><?= e($r['nis']) ?></td>
-                                <td><?= e($r['nama_siswa']) ?></td>
-                                <td><?= e(nama_kelas($r['tingkat'], $r['jurusan'], $r['bagian'])) ?></td>
-                                <td><?= e(format_waktu($r['waktu_terlambat'])) ?></td>
-                                <td><?= e($r['alasan'] ?? '-') ?></td>
-                                <td><?= e($r['keterangan'] ?? '-') ?></td>
-                                <td><?= e($r['nama_admin']) ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php require __DIR__ . '/includes/kaki.php'; ?>

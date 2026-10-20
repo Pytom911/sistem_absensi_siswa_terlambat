@@ -28,14 +28,21 @@ function ambil_flash()
     return $flash;
 }
 
-// Tampilkan pesan flash Bootstrap
+// Tampilkan pesan flash (alert)
 function tampilkan_flash()
 {
+    $peta = [
+        'success' => ['alert-sukses', 'bi-check-circle-fill'],
+        'danger'  => ['alert-bahaya', 'bi-exclamation-triangle-fill'],
+        'warning' => ['alert-waspada', 'bi-exclamation-circle-fill'],
+        'info'    => ['alert-info', 'bi-info-circle-fill'],
+    ];
     foreach (ambil_flash() as $f) {
-        $tipe = in_array($f['tipe'], ['success', 'danger', 'warning', 'info'], true) ? $f['tipe'] : 'info';
-        echo '<div class="alert alert-' . $tipe . ' alert-dismissible fade show" role="alert">'
-            . e($f['teks'])
-            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>'
+        [$kelas, $ikon] = $peta[$f['tipe']] ?? $peta['info'];
+        echo '<div class="alert ' . $kelas . '" role="alert">'
+            . '<i class="bi ' . $ikon . '"></i>'
+            . '<span>' . e($f['teks']) . '</span>'
+            . '<button type="button" class="alert-tutup" aria-label="Tutup">&times;</button>'
             . '</div>';
     }
 }

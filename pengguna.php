@@ -90,44 +90,48 @@ if ($aksi === 'ubah' && $_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 $judul_halaman = 'Kelola Pengguna';
+$sub_halaman = 'Akun admin yang berhak mencatat';
 $menu_aktif = 'pengguna';
 require __DIR__ . '/includes/kepala.php';
 ?>
 
 <!-- Form tambah / ubah -->
-<div class="card mb-4">
-    <div class="card-header fw-semibold">
-        <i class="bi bi-person-plus me-2"></i><?= $pengguna_ubah ? 'Ubah Akun' : 'Tambah Akun Admin' ?>
+<div class="panel mb-4">
+    <div class="panel-judul">
+        <i class="bi bi-person-plus"></i> <?= $pengguna_ubah ? 'Ubah Akun' : 'Tambah Akun Admin' ?>
     </div>
-    <div class="card-body">
-        <form method="post" class="row g-2 align-items-end">
+    <div class="panel-isi">
+        <form method="post" class="baris" style="align-items:flex-end">
             <input type="hidden" name="aksi" value="<?= $pengguna_ubah ? 'ubah' : 'tambah' ?>">
             <?php if ($pengguna_ubah): ?>
                 <input type="hidden" name="id" value="<?= (int)$pengguna_ubah['id'] ?>">
             <?php endif; ?>
-            <div class="col-md-3">
-                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                <input type="text" name="nama" class="form-control" maxlength="100" required
+            <div class="k-30">
+                <label class="label" for="nama">Nama Lengkap <span class="wajib">*</span></label>
+                <input type="text" name="nama" id="nama" class="kontrol" maxlength="100" required
                        value="<?= e($pengguna_ubah['nama'] ?? '') ?>">
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
-                <input type="text" name="nama_pengguna" class="form-control" maxlength="50" required
+            <div class="k-30">
+                <label class="label" for="nama_pengguna">Nama Pengguna <span class="wajib">*</span></label>
+                <input type="text" name="nama_pengguna" id="nama_pengguna" class="kontrol" maxlength="50" required
                        value="<?= e($pengguna_ubah['nama_pengguna'] ?? '') ?>">
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Kata Sandi <?= $pengguna_ubah ? '(kosongkan bila tetap)' : '<span class="text-danger">*</span>' ?></label>
-                <input type="password" name="kata_sandi" class="form-control" minlength="6"
-                       <?= $pengguna_ubah ? '' : 'required' ?>>
+            <div class="k-30">
+                <label class="label" for="kata_sandi">Kata Sandi
+                    <?php if ($pengguna_ubah): ?><span class="redup" style="font-weight:400">(kosongkan bila tetap)</span>
+                    <?php else: ?><span class="wajib">*</span><?php endif; ?>
+                </label>
+                <input type="password" name="kata_sandi" id="kata_sandi" class="kontrol" minlength="6"
+                       placeholder="minimal 6 karakter" <?= $pengguna_ubah ? '' : 'required' ?>>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-save me-1"></i><?= $pengguna_ubah ? 'Simpan' : 'Tambah' ?>
+            <div style="flex:0 0 auto">
+                <button type="submit" class="btn btn-inti">
+                    <i class="bi bi-save"></i> <?= $pengguna_ubah ? 'Simpan' : 'Tambah' ?>
                 </button>
             </div>
             <?php if ($pengguna_ubah): ?>
-                <div class="col-12">
-                    <a href="pengguna.php" class="btn btn-outline-secondary btn-sm">Batal ubah</a>
+                <div style="flex:0 0 auto">
+                    <a href="pengguna.php" class="btn btn-garis">Batal ubah</a>
                 </div>
             <?php endif; ?>
         </form>
@@ -135,51 +139,50 @@ require __DIR__ . '/includes/kepala.php';
 </div>
 
 <!-- Tabel pengguna -->
-<div class="card">
-    <div class="card-header fw-semibold">
-        <i class="bi bi-table me-2"></i>Daftar Akun Admin (<?= count($daftar_pengguna) ?>)
+<div class="panel">
+    <div class="panel-judul">
+        <i class="bi bi-table"></i> Daftar Akun Admin
+        <span class="badge badge-garis"><?= count($daftar_pengguna) ?> akun</span>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead>
+    <div class="tabel-bungkus">
+        <table class="tabel">
+            <thead>
+                <tr>
+                    <th style="width:56px">No</th>
+                    <th>Nama</th>
+                    <th>Nama Pengguna</th>
+                    <th>Peran</th>
+                    <th>Jumlah Catatan</th>
+                    <th>Dibuat</th>
+                    <th class="aksi">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($daftar_pengguna as $i => $p): ?>
                     <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>Nama Pengguna</th>
-                        <th>Peran</th>
-                        <th>Jumlah Catatan</th>
-                        <th>Dibuat Pada</th>
-                        <th class="text-end">Aksi</th>
+                        <td class="angka faint"><?= $i + 1 ?></td>
+                        <td style="font-weight:600"><?= e($p['nama']) ?></td>
+                        <td class="angka"><?= e($p['nama_pengguna']) ?></td>
+                        <td><span class="badge badge-petrol"><?= e($p['peran']) ?></span></td>
+                        <td class="angka"><?= (int)$p['jumlah_catatan'] ?> catatan</td>
+                        <td class="redup"><?= e(format_waktu($p['dibuat_pada'])) ?></td>
+                        <td class="aksi">
+                            <?php if ((int)$p['id'] === (int)$_SESSION['id_pengguna']): ?>
+                                <span class="badge badge-sukses">akun aktif</span>
+                            <?php else: ?>
+                                <a href="?aksi=ubah&id=<?= (int)$p['id'] ?>" class="btn btn-waspada btn-sm btn-ikon" title="Ubah">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="?aksi=hapus&id=<?= (int)$p['id'] ?>" class="btn btn-bahaya btn-sm btn-ikon" title="Hapus"
+                                   onclick="return confirm('Hapus akun <?= e($p['nama_pengguna']) ?>?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            <?php endif; ?>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($daftar_pengguna as $i => $p): ?>
-                        <tr>
-                            <td><?= $i + 1 ?></td>
-                            <td><?= e($p['nama']) ?></td>
-                            <td><?= e($p['nama_pengguna']) ?></td>
-                            <td><span class="badge text-bg-primary"><?= e($p['peran']) ?></span></td>
-                            <td><?= (int)$p['jumlah_catatan'] ?></td>
-                            <td><?= e(format_waktu($p['dibuat_pada'])) ?></td>
-                            <td class="text-end">
-                                <?php if ((int)$p['id'] === (int)$_SESSION['id_pengguna']): ?>
-                                    <span class="badge text-bg-light">akun aktif</span>
-                                <?php else: ?>
-                                    <a href="?aksi=ubah&id=<?= (int)$p['id'] ?>" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="?aksi=hapus&id=<?= (int)$p['id'] ?>" class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Hapus akun <?= e($p['nama_pengguna']) ?>?')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 </div>
 

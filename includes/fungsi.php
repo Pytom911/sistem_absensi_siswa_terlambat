@@ -58,6 +58,46 @@ function format_waktu($waktu)
     return date('j', $ts) . ' ' . $bulan[(int)date('n', $ts)] . ' ' . date('Y H:i', $ts);
 }
 
+// Ambil daftar riwayat keterlambatan sesuai filter (dipakai halaman riwayat & laporan PDF)
+function daftar_riwayat(PDO $pdo, array $filter): array
+{
+    $cari = trim((string)($filter['cari'] ?? ''));
+    $id_kelas = (int)($filter['id_kelas'] ?? 0);
+    $tanggal_mulai = (string)($filter['tanggal_mulai'] ?? '');
+    $tanggal_akhir = (string)($filter['tanggal_akhir'] ?? '');
+
+    $sql = 'SELECT a.*, s.nama AS nama_siswa, s.nis, k.tingkat, k.jurusan, k.bagian, p.nama AS nama_admin
+            FROM absensi_terlambat a
+            JOIN siswa s ON s.id = a.id_siswa
+            JOIN kelas k ON k.id = s.id_kelas
+            JOIN pengguna p ON p.id = a.id_pengguna
+            WHERE 1 = 1';
+    $params = [];
+
+    if ($cari !== '') {
+        $sql .= ' AND (s.nama LIKE ? OR s.nis LIKE ?)';
+        $params[] = '%' . $cari . '%';
+        $params[] = '%' . $cari . '%';
+    }
+    if ($id_kelas > 0) {
+        $sql .= ' AND s.id_kelas = ?';
+        $params[] = $id_kelas;
+    }
+    if ($tanggal_mulai !== '' && strtotime($tanggal_mulai)) {
+        $sql .= ' AND DATE(a.waktu_terlambat) >= ?';
+        $params[] = $tanggal_mulai;
+    }
+    if ($tanggal_akhir !== '' && strtotime($tanggal_akhir)) {
+        $sql .= ' AND DATE(a.waktu_terlambat) <= ?';
+        $params[] = $tanggal_akhir;
+    }
+    $sql .= ' ORDER BY a.waktu_terlambat DESC, a.id DESC';
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
 // Jumlah catatan keterlambatan hari ini
 function jumlah_terlambat_hari_ini(PDO $pdo)
 {

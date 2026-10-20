@@ -111,36 +111,7 @@ if ($record_ubah) {
                                       ORDER BY FIELD(k.tingkat,"X","XI","XII"), k.jurusan, k.bagian, s.nama')->fetchAll();
 }
 
-$sql = 'SELECT a.*, s.nama AS nama_siswa, s.nis, k.tingkat, k.jurusan, k.bagian, p.nama AS nama_admin
-        FROM absensi_terlambat a
-        JOIN siswa s ON s.id = a.id_siswa
-        JOIN kelas k ON k.id = s.id_kelas
-        JOIN pengguna p ON p.id = a.id_pengguna
-        WHERE 1 = 1';
-$params = [];
-
-if ($cari !== '') {
-    $sql .= ' AND (s.nama LIKE ? OR s.nis LIKE ?)';
-    $params[] = '%' . $cari . '%';
-    $params[] = '%' . $cari . '%';
-}
-if ($filter_kelas > 0) {
-    $sql .= ' AND s.id_kelas = ?';
-    $params[] = $filter_kelas;
-}
-if ($tanggal_mulai !== '' && strtotime($tanggal_mulai)) {
-    $sql .= ' AND DATE(a.waktu_terlambat) >= ?';
-    $params[] = $tanggal_mulai;
-}
-if ($tanggal_akhir !== '' && strtotime($tanggal_akhir)) {
-    $sql .= ' AND DATE(a.waktu_terlambat) <= ?';
-    $params[] = $tanggal_akhir;
-}
-$sql .= ' ORDER BY a.waktu_terlambat DESC, a.id DESC';
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$riwayat = $stmt->fetchAll();
+$riwayat = daftar_riwayat($pdo, $param_filter);
 
 $daftar_kelas = $pdo->query('SELECT * FROM kelas
                              ORDER BY FIELD(tingkat,"X","XI","XII"), jurusan, bagian')->fetchAll();
@@ -235,6 +206,12 @@ require __DIR__ . '/includes/kepala.php';
             </div>
             <div style="flex:0 0 auto">
                 <button type="submit" class="btn btn-inti"><i class="bi bi-search"></i> Terapkan</button>
+            </div>
+            <div style="flex:0 0 auto">
+                <a href="laporan.php<?= filter_riwayat($param_filter) !== '' ? '?' . e(filter_riwayat($param_filter)) : '' ?>"
+                   class="btn btn-waspada" target="_blank" rel="noopener">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </a>
             </div>
             <div style="flex:0 0 auto">
                 <a href="riwayat.php" class="btn btn-garis">Reset</a>

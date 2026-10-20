@@ -163,7 +163,7 @@ require __DIR__ . '/includes/kepala.php';
                         <td class="angka faint"><?= $i + 1 ?></td>
                         <td style="font-weight:600"><?= e($p['nama']) ?></td>
                         <td class="angka"><?= e($p['nama_pengguna']) ?></td>
-                        <td><span class="badge badge-petrol"><?= e($p['peran']) ?></span></td>
+                        <td><span class="badge badge-biru"><?= e($p['peran']) ?></span></td>
                         <td class="angka"><?= (int)$p['jumlah_catatan'] ?> catatan</td>
                         <td class="redup"><?= e(format_waktu($p['dibuat_pada'])) ?></td>
                         <td class="aksi">

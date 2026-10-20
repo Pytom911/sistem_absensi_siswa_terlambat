@@ -168,7 +168,7 @@ require __DIR__ . '/includes/kepala.php';
                     <?php foreach ($daftar_kelas as $i => $k): ?>
                         <tr>
                             <td class="angka faint"><?= $i + 1 ?></td>
-                            <td><span class="badge badge-petrol"><?= e($k['tingkat']) ?></span></td>
+                            <td><span class="badge badge-biru"><?= e($k['tingkat']) ?></span></td>
                             <td style="font-weight:600"><?= e($k['jurusan']) ?></td>
                             <td class="angka"><?= e($k['bagian']) ?></td>
                             <td class="angka"><?= (int)$k['jumlah_siswa'] ?> siswa</td>

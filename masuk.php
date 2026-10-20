@@ -49,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Panel kiri: identitas + jam -->
     <section class="masuk-panel no-print">
         <div class="masuk-merek">
-            <div class="masuk-logo">SMK</div>
+            <div class="masuk-logo">
+                <img src="assets/logo_smkn.png" alt="Logo SMK Negeri 1 Kraksaan">
+            </div>
             <div>
                 <div class="masuk-nama">SMK Negeri 1 Kraksaan</div>
                 <div class="masuk-tag">Sistem Absensi Keterlambatan</div>

@@ -185,7 +185,7 @@ require __DIR__ . '/includes/kepala.php';
                         <tr>
                             <td class="angka"><?= e($s['nis']) ?></td>
                             <td style="font-weight:600"><?= e($s['nama']) ?></td>
-                            <td><span class="badge badge-petrol"><?= e(nama_kelas($s['tingkat'], $s['jurusan'], $s['bagian'])) ?></span></td>
+                            <td><span class="badge badge-biru"><?= e(nama_kelas($s['tingkat'], $s['jurusan'], $s['bagian'])) ?></span></td>
                             <td class="aksi">
                                 <a href="?aksi=ubah&id=<?= (int)$s['id'] ?>" class="btn btn-waspada btn-sm btn-ikon" title="Ubah">
                                     <i class="bi bi-pencil"></i>

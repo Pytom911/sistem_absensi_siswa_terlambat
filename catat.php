@@ -156,7 +156,7 @@ require __DIR__ . '/includes/kepala.php';
 <div class="panel mb-4">
     <div class="panel-judul">
         <i class="bi bi-people"></i> 2. Siswa Kelas <?= e($kelas_dipilih) ?>
-        <span class="badge badge-petrol" style="margin-left:auto"><?= count($daftar_siswa) ?> siswa</span>
+        <span class="badge badge-biru" style="margin-left:auto"><?= count($daftar_siswa) ?> siswa</span>
     </div>
     <div class="panel-isi">
         <form method="get" class="baris mb-4" style="align-items:flex-end">

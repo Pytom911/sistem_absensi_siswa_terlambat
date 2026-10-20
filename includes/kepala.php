@@ -34,7 +34,9 @@ $menu = [
 
     <aside class="sider no-print" id="sider">
         <div class="sider-identitas">
-            <div class="sider-logo">SMK</div>
+            <div class="sider-logo">
+                <img src="assets/logo_smkn.png" alt="Logo SMK Negeri 1 Kraksaan">
+            </div>
             <div>
                 <div class="sider-nama">SMK Negeri 1 Kraksaan</div>
                 <div class="sider-sub">Sistem Absensi Keterlambatan</div>

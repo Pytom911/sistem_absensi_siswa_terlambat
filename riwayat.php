@@ -122,7 +122,7 @@ require __DIR__ . '/includes/kepala.php';
                                 <div style="font-weight:600"><?= e($r['nama_siswa']) ?></div>
                                 <div class="kecil faint angka"><?= e($r['nis']) ?></div>
                             </td>
-                            <td><span class="badge badge-petrol"><?= e(nama_kelas($r['tingkat'], $r['jurusan'], $r['bagian'])) ?></span></td>
+                            <td><span class="badge badge-biru"><?= e(nama_kelas($r['tingkat'], $r['jurusan'], $r['bagian'])) ?></span></td>
                             <td><span class="waktu-terlambat"><?= e(format_waktu($r['waktu_terlambat'])) ?></span></td>
                             <td class="redup"><?= e($r['alasan'] ?: '-') ?></td>
                             <td class="redup"><?= e($r['keterangan'] ?: '-') ?></td>

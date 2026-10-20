@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
         try {
             $stmt = $pdo->prepare('INSERT INTO pengguna (nama, nama_pengguna, kata_sandi, peran)
                                    VALUES (?, ?, ?, "admin")');
-            $stmt->execute([$nama, $nama_pengguna, password_hash($kata_sandi, PASSWORD_BCRYPT)]);
+            $stmt->execute([$nama, $nama_pengguna, $kata_sandi]);
             pesan_flash('success', 'Akun admin berhasil ditambahkan.');
         } catch (PDOException $e) {
             pesan_flash('danger', 'Gagal menyimpan. Nama pengguna mungkin sudah terpakai.');
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
         try {
             if ($kata_sandi !== '') {
                 $stmt = $pdo->prepare('UPDATE pengguna SET nama = ?, nama_pengguna = ?, kata_sandi = ? WHERE id = ?');
-                $stmt->execute([$nama, $nama_pengguna, password_hash($kata_sandi, PASSWORD_BCRYPT), $id]);
+                $stmt->execute([$nama, $nama_pengguna, $kata_sandi, $id]);
             } else {
                 $stmt = $pdo->prepare('UPDATE pengguna SET nama = ?, nama_pengguna = ? WHERE id = ?');
                 $stmt->execute([$nama, $nama_pengguna, $id]);

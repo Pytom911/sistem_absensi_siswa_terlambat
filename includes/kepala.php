@@ -5,7 +5,7 @@ $menu_aktif = $menu_aktif ?? '';
 $nama_admin = $_SESSION['nama'] ?? 'Admin';
 
 $menu = [
-    'beranda' => ['url' => 'beranda.php', 'label' => 'Dashboard', 'ikon' => 'bi-speedometer2'],
+    'beranda' => ['url' => 'index.php', 'label' => 'Dashboard', 'ikon' => 'bi-speedometer2'],
     'catat'    => ['url' => 'catat.php', 'label' => 'Pencatatan', 'ikon' => 'bi-pencil-square'],
     'siswa'    => ['url' => 'siswa.php', 'label' => 'Data Siswa', 'ikon' => 'bi-people'],
     'kelas'    => ['url' => 'kelas.php', 'label' => 'Data Kelas', 'ikon' => 'bi-building'],
@@ -26,7 +26,7 @@ $menu = [
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary no-print">
     <div class="container-fluid">
-        <a class="navbar-brand fw-semibold" href="beranda.php">
+        <a class="navbar-brand fw-semibold" href="index.php">
             <i class="bi bi-clock-history me-1"></i>Absensi Keterlambatan
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">

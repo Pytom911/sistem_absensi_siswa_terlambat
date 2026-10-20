@@ -5,7 +5,7 @@ require_once __DIR__ . '/includes/fungsi.php';
 
 // Sudah login, langsung ke dashboard
 if (isset($_SESSION['id_pengguna'])) {
-    redirect('beranda.php');
+    redirect('index.php');
 }
 
 $galat = '';
@@ -21,12 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$nama_pengguna]);
         $akun = $stmt->fetch();
 
-        if ($akun && password_verify($kata_sandi, $akun['kata_sandi'])) {
+        if ($akun && $kata_sandi === $akun['kata_sandi']) {
             session_regenerate_id(true);
             $_SESSION['id_pengguna'] = $akun['id'];
             $_SESSION['nama'] = $akun['nama'];
             $_SESSION['peran'] = $akun['peran'];
-            redirect('beranda.php');
+            redirect('index.php');
         }
         $galat = 'Nama pengguna atau kata sandi salah.';
     }

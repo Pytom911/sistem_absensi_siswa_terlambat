@@ -106,8 +106,16 @@ require __DIR__ . '/includes/kepala.php';
             <div class="col-md-4">
                 <label class="form-label">Jurusan <span class="text-danger">*</span></label>
                 <input type="text" name="jurusan" class="form-control" maxlength="30" required
-                       placeholder="Contoh: RPL, TKJ, DKV..."
+                       list="daftar_jurusan" placeholder="Contoh: RPL, DKV, TKJ..."
                        value="<?= e($kelas_ubah['jurusan'] ?? '') ?>">
+                <datalist id="daftar_jurusan">
+                    <option value="RPL"></option>
+                    <option value="DKV"></option>
+                    <option value="TKJ"></option>
+                    <option value="AKL"></option>
+                    <option value="MPLB"></option>
+                    <option value="Pemasaran"></option>
+                </datalist>
             </div>
             <div class="col-md-2">
                 <label class="form-label">Bagian <span class="text-danger">*</span></label>

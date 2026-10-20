@@ -1,0 +1,7 @@
+<?php
+// Keluar dari sistem
+session_start();
+$_SESSION = [];
+session_destroy();
+header('Location: masuk.php');
+exit;

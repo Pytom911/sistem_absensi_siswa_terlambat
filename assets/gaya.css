@@ -1,0 +1,34 @@
+/* Tambahan kecil di atas Bootstrap */
+body {
+    background-color: #f8f9fa;
+}
+
+.sidebar .list-group-item {
+    color: #333;
+}
+
+.sidebar .list-group-item.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.kartu-menu {
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.kartu-menu:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12);
+}
+
+.jumlah-besar {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}

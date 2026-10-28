@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'tambah') {
 
 // Ubah kelas
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
-    $id = (int)($_POST['id'] ?? 0);
+    $id = (int) ($_POST['id'] ?? 0);
     $tingkat = $_POST['tingkat'] ?? '';
     $jurusan = trim($_POST['jurusan'] ?? '');
     $bagian = $_POST['bagian'] ?? '';
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $aksi === 'ubah') {
 
 // Hapus kelas (ditolak bila masih ada siswa)
 if ($aksi === 'hapus') {
-    $id = (int)($_GET['id'] ?? 0);
+    $id = (int) ($_GET['id'] ?? 0);
     if ($id > 0) {
         try {
             $stmt = $pdo->prepare('DELETE FROM kelas WHERE id = ?');
@@ -85,7 +85,7 @@ $daftar_kelas = $pdo->query('SELECT k.*, COUNT(s.id) AS jumlah_siswa
 // Mode ubah: ambil data kelas
 $kelas_ubah = null;
 if ($aksi === 'ubah' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $id = (int)($_GET['id'] ?? 0);
+    $id = (int) ($_GET['id'] ?? 0);
     $stmt = $pdo->prepare('SELECT * FROM kelas WHERE id = ?');
     $stmt->execute([$id]);
     $kelas_ubah = $stmt->fetch();
@@ -106,21 +106,22 @@ require __DIR__ . '/includes/kepala.php';
         <form method="post" class="baris" style="align-items:flex-end">
             <input type="hidden" name="aksi" value="<?= $kelas_ubah ? 'ubah' : 'tambah' ?>">
             <?php if ($kelas_ubah): ?>
-                <input type="hidden" name="id" value="<?= (int)$kelas_ubah['id'] ?>">
+                <input type="hidden" name="id" value="<?= (int) $kelas_ubah['id'] ?>">
             <?php endif; ?>
             <div class="k-25">
                 <label class="label" for="tingkat">Tingkat <span class="wajib">*</span></label>
                 <select name="tingkat" id="tingkat" class="pilih" required>
                     <?php foreach (['X', 'XI', 'XII'] as $t): ?>
-                        <option value="<?= $t ?>" <?= ($kelas_ubah['tingkat'] ?? '') === $t ? 'selected' : '' ?>><?= $t ?></option>
+                        <option value="<?= $t ?>" <?= ($kelas_ubah['tingkat'] ?? '') === $t ? 'selected' : '' ?>><?= $t ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="k-40">
                 <label class="label" for="jurusan">Jurusan <span class="wajib">*</span></label>
                 <input type="text" name="jurusan" id="jurusan" class="kontrol" maxlength="30" required
-                       list="daftar_jurusan" placeholder="Contoh: RPL, DKV, TKJ..."
-                       value="<?= e($kelas_ubah['jurusan'] ?? '') ?>">
+                    list="daftar_jurusan" placeholder="Contoh: RPL, DKV, TKJ..."
+                    value="<?= e($kelas_ubah['jurusan'] ?? '') ?>">
                 <datalist id="daftar_jurusan">
                     <option value="RPL"></option>
                     <option value="DKV"></option>
@@ -134,7 +135,8 @@ require __DIR__ . '/includes/kepala.php';
                 <label class="label" for="bagian">Bagian <span class="wajib">*</span></label>
                 <select name="bagian" id="bagian" class="pilih" required>
                     <?php foreach (['01', '02'] as $b): ?>
-                        <option value="<?= $b ?>" <?= ($kelas_ubah['bagian'] ?? '') === $b ? 'selected' : '' ?>><?= $b ?></option>
+                        <option value="<?= $b ?>" <?= ($kelas_ubah['bagian'] ?? '') === $b ? 'selected' : '' ?>><?= $b ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -185,13 +187,15 @@ require __DIR__ . '/includes/kepala.php';
                             <td><span class="badge badge-biru"><?= e($k['tingkat']) ?></span></td>
                             <td style="font-weight:600"><?= e($k['jurusan']) ?></td>
                             <td class="angka"><?= e($k['bagian']) ?></td>
-                            <td class="angka"><?= (int)$k['jumlah_siswa'] ?> siswa</td>
+                            <td class="angka"><?= (int) $k['jumlah_siswa'] ?> siswa</td>
                             <td class="aksi">
-                                <a href="?aksi=ubah&id=<?= (int)$k['id'] ?>" class="btn btn-waspada btn-sm btn-ikon" title="Ubah">
+                                <a href="?aksi=ubah&id=<?= (int) $k['id'] ?>" class="btn btn-waspada btn-sm btn-ikon"
+                                    title="Ubah">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="?aksi=hapus&id=<?= (int)$k['id'] ?>" class="btn btn-bahaya btn-sm btn-ikon" title="Hapus"
-                                   onclick="return confirm('Hapus kelas <?= e(nama_kelas($k['tingkat'], $k['jurusan'], $k['bagian'])) ?>?')">
+                                <a href="?aksi=hapus&id=<?= (int) $k['id'] ?>" class="btn btn-bahaya btn-sm btn-ikon"
+                                    title="Hapus"
+                                    onclick="return confirm('Hapus kelas <?= e(nama_kelas($k['tingkat'], $k['jurusan'], $k['bagian'])) ?>?')">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </td>

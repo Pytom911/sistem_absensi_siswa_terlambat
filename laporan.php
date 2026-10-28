@@ -11,7 +11,7 @@ use Dompdf\Options;
 // Filter sama dengan halaman riwayat
 $param_filter = [
     'cari' => trim($_GET['cari'] ?? ''),
-    'id_kelas' => (int)($_GET['id_kelas'] ?? 0),
+    'id_kelas' => (int) ($_GET['id_kelas'] ?? 0),
     'tanggal_mulai' => $_GET['tanggal_mulai'] ?? '',
     'tanggal_akhir' => $_GET['tanggal_akhir'] ?? '',
 ];

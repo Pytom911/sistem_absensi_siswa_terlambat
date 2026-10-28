@@ -6,10 +6,10 @@ require_once __DIR__ . '/includes/fungsi.php';
 
 $jumlah_hari_ini = jumlah_terlambat_hari_ini($pdo);
 
-$jumlah_minggu_ini = (int)$pdo->query('SELECT COUNT(*) FROM absensi_terlambat
+$jumlah_minggu_ini = (int) $pdo->query('SELECT COUNT(*) FROM absensi_terlambat
     WHERE YEARWEEK(waktu_terlambat, 1) = YEARWEEK(CURDATE(), 1)')->fetchColumn();
 
-$jumlah_total = (int)$pdo->query('SELECT COUNT(*) FROM absensi_terlambat')->fetchColumn();
+$jumlah_total = (int) $pdo->query('SELECT COUNT(*) FROM absensi_terlambat')->fetchColumn();
 
 // Catatan hari ini (untuk rel waktu & daftar terbaru)
 $hari_ini = $pdo->prepare('SELECT a.id, a.waktu_terlambat, a.alasan,
@@ -30,7 +30,7 @@ $rel_jam_masuk = 7 * 60;
 
 $titik_rel = [];
 foreach (array_reverse($catatan_hari_ini) as $c) {
-    $menit = (int)date('G', strtotime($c['waktu_terlambat'])) * 60 + (int)date('i', strtotime($c['waktu_terlambat']));
+    $menit = (int) date('G', strtotime($c['waktu_terlambat'])) * 60 + (int) date('i', strtotime($c['waktu_terlambat']));
     $pct = (($menit - $rel_mulai) / $rel_durasi) * 100;
     if ($pct < 0 || $pct > 100) {
         continue;
@@ -53,7 +53,8 @@ require __DIR__ . '/includes/kepala.php';
 <section class="hero mb-4">
     <div class="hero-tanggal"><?= e($tanggal_sekarang) ?></div>
     <div class="hero-angka"><?= $jumlah_hari_ini ?></div>
-    <p class="hero-teks">keterlambatan tercatat hari ini. Batas masuk 07:00 — setiap catatan tercatat otomatis dengan waktu dan admin pelapor.</p>
+    <p class="hero-teks">keterlambatan tercatat hari ini. Batas masuk 07:00 — setiap catatan tercatat otomatis dengan
+        waktu dan admin pelapor.</p>
     <a class="btn btn-terang" href="catat.php"><i class="bi bi-pencil-square"></i> Catat Keterlambatan</a>
 </section>
 
@@ -98,9 +99,8 @@ require __DIR__ . '/includes/kepala.php';
                 <div class="rel-lonceng-label" style="left:<?= $pct_jam_masuk ?>%">Masuk 07:00</div>
 
                 <?php foreach ($titik_rel as $t): ?>
-                    <div class="rel-titik" style="left:<?= $t['pct'] ?>%"
-                         data-label="<?= $t['label'] ?>"
-                         title="<?= $t['label'] ?>"></div>
+                    <div class="rel-titik" style="left:<?= $t['pct'] ?>%" data-label="<?= $t['label'] ?>"
+                        title="<?= $t['label'] ?>"></div>
                 <?php endforeach; ?>
 
                 <div class="rel-skala">
@@ -142,8 +142,12 @@ require __DIR__ . '/includes/kepala.php';
                                         <div style="font-weight:600"><?= e($c['nama_siswa']) ?></div>
                                         <div class="kecil faint angka"><?= e($c['nis']) ?></div>
                                     </td>
-                                    <td><span class="badge badge-biru"><?= e(nama_kelas($c['tingkat'], $c['jurusan'], $c['bagian'])) ?></span></td>
-                                    <td><span class="waktu-terlambat"><?= e(date('H:i', strtotime($c['waktu_terlambat']))) ?></span></td>
+                                    <td><span
+                                            class="badge badge-biru"><?= e(nama_kelas($c['tingkat'], $c['jurusan'], $c['bagian'])) ?></span>
+                                    </td>
+                                    <td><span
+                                            class="waktu-terlambat"><?= e(date('H:i', strtotime($c['waktu_terlambat']))) ?></span>
+                                    </td>
                                     <td class="redup"><?= e($c['alasan'] ?: '-') ?></td>
                                 </tr>
                             <?php endforeach; ?>

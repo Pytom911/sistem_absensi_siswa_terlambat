@@ -4,7 +4,7 @@
 // Escape output agar aman dari XSS
 function e($teks)
 {
-    return htmlspecialchars((string)$teks, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
 }
 
 // Aliasan redirect lalu hentikan skrip
@@ -33,9 +33,9 @@ function tampilkan_flash()
 {
     $peta = [
         'success' => ['alert-sukses', 'bi-check-circle-fill'],
-        'danger'  => ['alert-bahaya', 'bi-exclamation-triangle-fill'],
+        'danger' => ['alert-bahaya', 'bi-exclamation-triangle-fill'],
         'warning' => ['alert-waspada', 'bi-exclamation-circle-fill'],
-        'info'    => ['alert-info', 'bi-info-circle-fill'],
+        'info' => ['alert-info', 'bi-info-circle-fill'],
     ];
     foreach (ambil_flash() as $f) {
         [$kelas, $ikon] = $peta[$f['tipe']] ?? $peta['info'];
@@ -55,16 +55,16 @@ function format_waktu($waktu)
     }
     $bulan = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     $ts = strtotime($waktu);
-    return date('j', $ts) . ' ' . $bulan[(int)date('n', $ts)] . ' ' . date('Y H:i', $ts);
+    return date('j', $ts) . ' ' . $bulan[(int) date('n', $ts)] . ' ' . date('Y H:i', $ts);
 }
 
 // Ambil daftar riwayat keterlambatan sesuai filter (dipakai halaman riwayat & laporan PDF)
 function daftar_riwayat(PDO $pdo, array $filter): array
 {
-    $cari = trim((string)($filter['cari'] ?? ''));
-    $id_kelas = (int)($filter['id_kelas'] ?? 0);
-    $tanggal_mulai = (string)($filter['tanggal_mulai'] ?? '');
-    $tanggal_akhir = (string)($filter['tanggal_akhir'] ?? '');
+    $cari = trim((string) ($filter['cari'] ?? ''));
+    $id_kelas = (int) ($filter['id_kelas'] ?? 0);
+    $tanggal_mulai = (string) ($filter['tanggal_mulai'] ?? '');
+    $tanggal_akhir = (string) ($filter['tanggal_akhir'] ?? '');
 
     $sql = 'SELECT a.*, s.nama AS nama_siswa, s.nis, k.tingkat, k.jurusan, k.bagian, p.nama AS nama_admin
             FROM absensi_terlambat a
@@ -103,7 +103,7 @@ function jumlah_terlambat_hari_ini(PDO $pdo)
 {
     $stmt = $pdo->prepare('SELECT COUNT(*) FROM absensi_terlambat WHERE DATE(waktu_terlambat) = CURDATE()');
     $stmt->execute();
-    return (int)$stmt->fetchColumn();
+    return (int) $stmt->fetchColumn();
 }
 
 // Susun nama kelas dari 3 kolom
@@ -115,7 +115,7 @@ function nama_kelas($tingkat, $jurusan, $bagian)
 // Apakah exception karena pelanggaran unique key (duplikat)?
 function duplikat(PDOException $e)
 {
-    return ($e->errorInfo[0] ?? '') === '23000' && (int)($e->errorInfo[1] ?? 0) === 1062;
+    return ($e->errorInfo[0] ?? '') === '23000' && (int) ($e->errorInfo[1] ?? 0) === 1062;
 }
 
 // Cari data lain yang sudah memakai nilai unik tertentu.
